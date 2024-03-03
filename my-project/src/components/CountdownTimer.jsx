@@ -1,24 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { onValue, realtimeDB, ref, set } from "../firebase";
 import { toast } from "react-toastify";
 
-const CountdownTimer = () => {
-  const [timeRemain, setTimeRemain] = useState(60);
+const CountdownTimer = ({ userName }) => {
+  const [timeRemain, setTimeRemain] = useState(10);
   const [isRunning, setIsRunning] = useState(false);
-  const [count, setCount] = useState(0);
+
+  const intervalRef = useRef();
 
   const handleStart = (e) => {
     e.preventDefault();
     setIsRunning(true);
   };
+
   useEffect(() => {
     const timeRef = ref(realtimeDB, "rooms/" + "roomA");
-    set(timeRef, { timeRemain: 60 });
+    set(timeRef, { timeRemain: 10 });
 
     onValue(timeRef, (snapshot) => {
       const data = snapshot.val();
 
-      console.log(data.timeRemain);
       setTimeRemain(data.timeRemain);
     });
   }, [isRunning]);
@@ -26,62 +27,34 @@ const CountdownTimer = () => {
   useEffect(() => {
     //Implementing the setInterval method
     const timeRef = ref(realtimeDB, "rooms/" + "roomA");
-    const interval = setInterval(() => {
-      // setCount(count + 1);
-      set(timeRef, { timeRemain: timeRemain - 1 });
-    }, 1000);
+    if (isRunning) {
+      if (timeRemain > 0) {
+        intervalRef.current = setInterval(() => {
+          set(timeRef, { timeRemain: timeRemain - 1 });
+        }, 1000);
+      } else {
+        clearInterval(intervalRef.current);
+        toast.success("Mr." + userName + " đã giành chiến thắng 🚀🚀");
+      }
+    }
 
-    //Clearing the interval
-    return () => clearInterval(interval);
-  }, [count]);
+    return () => clearInterval(intervalRef.current);
+  }, [timeRemain, isRunning]);
 
-  const handleChange = (e) => {
+  const handleReset = (e) => {
     e.preventDefault();
-    const timeRef = ref(realtimeDB, "rooms/" + "roomA");
-    set(timeRef, { timeRemain: timeRemain - 1 });
+    setTimeRemain(10);
+    // setIsRunning(false);
   };
-
-  // useEffect(() => {
-  //   let intervalId;
-  //   const timeRef = ref(realtimeDB, "rooms/" + "roomA");
-  //   set(timeRef, { timeRemain: 59 });
-  //   if (isRunning) {
-  //     intervalId = setInterval(() => {
-  //       setTimeRemain((prevTime) => {
-  //         if (prevTime.timeRemain > 0) {
-  //           return { timeRemain: prevTime.timeRemain - 1 };
-  //         } else {
-  //           clearInterval(intervalId);
-  //           return prevTime;
-  //         }
-  //       });
-  //     }, 1000);
-  //   }
-
-  //   return () => clearInterval(intervalId);
-  // }, [isRunning]);
-
-  // const handleChange2 = (e) => {
-  //   e.preventDefault();
-  //   const timeRef = ref(realtimeDB, "rooms/" + "roomA");
-  //   set(timeRef, { timeRemain: timeRemain - 1 });
-  // };
-  // const handleChange3 = (e) => {
-  //   e.preventDefault();
-  //   const timeRef = ref(realtimeDB, "rooms/" + "roomA");
-  //   set(timeRef, { timeRemain: timeRemain - 1 });
-  // };
 
   return (
     <>
       <div>
-        <h1>{count}</h1>
-        <h1>{timeRemain}</h1>
-        <button onClick={handleChange}>Change</button>
+        <h1>Thời gian còn lại: {timeRemain} giây</h1>
         <br />
         <button onClick={handleStart}>Start</button>
-        {/* <button onClick={handleChange2}>Change2</button>
-        <button onClick={handleChange3}>Change3</button> */}
+        <br />
+        <button onClick={handleReset}>Reset</button>
       </div>
     </>
   );

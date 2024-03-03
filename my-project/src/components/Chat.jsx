@@ -122,35 +122,6 @@ const Chat = () => {
     };
   }, [bidAmount]);
 
-  useEffect(() => {
-    if (start) {
-      intervalRef.current = setInterval(() => {
-        setTimeRemain((t) => t - 1);
-        set(ref(realtimeDB, "rooms/" + roomName), {
-          timeRemain: timeRemain,
-        });
-      }, 1000);
-      const timeRemainRef = ref(realtimeDB, "rooms/" + roomName);
-      onValue(timeRemainRef, (snapshot) => {
-        const data = snapshot.val();
-        console.log(data);
-      });
-    }
-
-    return () => {
-      clearInterval(intervalRef.current);
-    };
-  }, [start]);
-
-  useEffect(() => {
-    if (timeRemain <= 0) {
-      setStart(false);
-      clearInterval(intervalRef.current);
-
-      toast.success("Ok");
-    }
-  }, []);
-
   function formatTimestamp(timestamp) {
     if (!timestamp) return "";
     const date = new Date(timestamp.seconds * 1000);
@@ -164,7 +135,8 @@ const Chat = () => {
         <div className="px-3 py-2 text-white rounded-xl bg-slate-900">
           <h1 className="flex items-center gap-3 text-2xl font-medium">
             <PiClockCountdownFill />
-            Thời gian còn lại: {timeRemain} giây
+            {/* Thời gian còn lại: {timeRemain} giây */}
+            <CountdownTimer userName={bidAmount.userName} />
           </h1>
         </div>
         <Link to="/">
