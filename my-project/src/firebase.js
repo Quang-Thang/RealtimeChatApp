@@ -2,6 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getDatabase, ref, set, onValue } from "firebase/database";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -24,4 +25,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-export { auth, app, db };
+const realtimeDB = getDatabase();
+
+// const [timeRemain, setTimeRemain] = useState({});
+// onValue(timeRef, (snapshot) => {
+//   const data = snapshot.val();
+//   console.log("In config " + data);
+//   setTimeRemain(data);
+//   console.log(timeRemain);
+// });
+
+export { auth, app, db, realtimeDB, ref, set, onValue };
